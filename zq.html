@@ -1,0 +1,47 @@
+otherServicesCost += servicesPrices[service]  0;
+      }
+    });
+    if (videoIncluded) otherServicesCost += servicesPrices['Видео прохождения до квеста'];
+
+    totalPrice += photoMagnetCost + otherServicesCost;
+
+    let breakdownText = Базовая цена ${basePrice} руб. (за ${minPlayers}–${maxBasePlayers} игроков)n;
+    if (extraPlayersCount  0) breakdownText += Доплата за ${extraPlayersCount} дополнительных игроков ${extraFee}  ${extraPlayersCount} = ${extraPlayersCost} руб.n;
+
+    const servicesListDesc = [];
+    if (photoMagnetCount  0) {
+      let photoMagnetDesc = 'Фотомагнит ';
+      for(let i=0; iphotoMagnetCount; i++){
+        photoMagnetDesc += (i % 2 ===0)  '350'  '250';
+        if(i!== photoMagnetCount-1) photoMagnetDesc += ' руб. + ';
+        else photoMagnetDesc += ' руб.';
+      }
+      servicesListDesc.push(photoMagnetDesc);
+    }
+    if(videoIncluded) servicesListDesc.push('видео 900 рублей');
+    selectedServices.forEach(s={
+      if(s !== 'Видео прохождения до квеста'){
+        servicesListDesc.push(s.toLowerCase() + ' ' + servicesPrices[s] + ' рублей');
+      }
+    });
+    if(servicesListDesc.length0){
+      breakdownText += 'Дополнительные услуги ' + servicesListDesc.join(' + ') + 'n';
+    }
+
+    breakdownText += Итоговая стоимость ${totalPrice} руб.;
+
+    resultDiv.textContent = breakdownText;
+  }
+
+  questTypeSelect.addEventListener('change',fillQuestNames);
+  questNameSelect.addEventListener('change', updateCalculation);
+  dayTypeSelect.addEventListener('change', updateCalculation);
+  playerCountInput.addEventListener('input', updateCalculation);
+  photoMagnetInput.addEventListener('input', updateCalculation);
+  servicesCheckboxes.forEach(cb=cb.addEventListener('change', updateCalculation));
+
+  fillQuestNames();
+});
+script
+body
+html
