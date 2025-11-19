@@ -1,1 +1,277 @@
-<html><body>Calculator</body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Калькулятор стоимости квестов</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 10px; }
+  label { display: block; margin: 10px 0 5px; }
+  select, input[type=number] { width: 100%; padding: 8px; font-size: 1em; box-sizing: border-box; }
+  .services label { display: block; margin-bottom: 5px; cursor: pointer; }
+  #result { background: #f5f5f5; padding: 10px; margin-top: 20px; white-space: pre-line; border-radius: 4px; font-size: 1.1em; }
+  .inline { display: inline-block; width: auto; margin-left: 10px; font-weight: normal; }
+</style>
+</head>
+<body>
+<h2>Калькулятор стоимости квестов</h2>
+
+<label for="questType">Тип квеста</label>
+<select id="questType">
+  <option value="взрослые">Взрослые</option>
+  <option value="детские">Детские</option>
+</select>
+
+<label for="questName">Название квеста</label>
+<select id="questName">
+  <option value="">Выберите тип квеста</option>
+</select>
+
+<label for="dayType">День недели</label>
+<select id="dayType">
+  <option value="будни">Понедельник - Четверг</option>
+  <option value="выходные">Пятница - Воскресенье</option>
+</select>
+
+<label for="playerCount">Количество игроков (2-30)</label>
+<input type="number" id="playerCount" value="2" min="2" max="30" />
+
+<div class="services">
+  <label>
+    Фотомагнит (кол-во): 
+    <input type="number" id="photoMagnetCount" value="0" min="0" max="10" class="inline" />
+  </label>
+  <label><input type="checkbox" value="Большая комната чаепития на 1 час после квеста"> Большая комната чаепития на 1 час после квеста (950 р)</label>
+  <label><input type="checkbox" value="Большая комната чаепития во время квеста"> Большая комната чаепития во время квеста (475 р)</label>
+  <label><input type="checkbox" value="Маленькая комната чаепития на 1 час после квеста"> Маленькая комната чаепития на 1 час после квеста (800 р)</label>
+  <label><input type="checkbox" value="Маленькая комната чаепития во время квеста"> Маленькая комната чаепития во время квеста (400 р)</label>
+  <label><input type="checkbox" value="Вечерняя игра"> Вечерняя игра (500 р)</label>
+  <label><input type="checkbox" value="Вечерняя игра (ОЗ,ОЗ2)"> Вечерняя игра (ОЗ,ОЗ2) (1000 р)</label>
+  <label><input type="checkbox" value="Ночная игра"> Ночная игра (1000 р)</label>
+  <label><input type="checkbox" value="Аниматор"> Аниматор (1150 р)</label>
+  <label><input type="checkbox" value="Срочная игра"> Срочная игра (500 р)</label>
+  <label><input type="checkbox" value="Видео прохождения до квеста"> Видео прохождения до квеста (900 р)</label>
+  <label><input type="checkbox" value="Поздравление именинника"> Поздравление именинника (1150 р)</label>
+</div>
+
+<div id="result"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // ДАННЫЕ КВЕСТОВ
+  var quests = {
+    "взрослые": {
+      "Учреждение 57": {minPlayers: 2, maxBasePlayers: 4, weekdays: 2900, weekend: 3500, extra: 600},
+      "ОНИ": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3800, weekend: 4300, extra: 600},
+      "Тьма": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3400, weekend: 3900, extra: 600},
+      "Квартира 404": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3500, weekend: 3900, extra: 600},
+      "Сайлент Хилл.Элис": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3500, weekend: 3900, extra: 600},
+      "Бар Дарксайд": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3800, weekend: 4300, extra: 600},
+      "Амнезия": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3500, weekend: 3900, extra: 600},
+      "Обитель Зла": {minPlayers: 2, maxBasePlayers: 5, weekdays: 5500, weekend: 5900, extra: 600},
+      "Обитель Зла.Апокалипсис": {minPlayers: 2, maxBasePlayers: 5, weekdays: 6000, weekend: 7000, extra: 800},
+      "Бар Дарксайд. Алкогольная версия": {minPlayers: 2, maxBasePlayers: 5, weekdays: 5500, weekend: 5900, extra: 800},
+      "Дитя Тьмы": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3900, weekend: 4400, extra: 600},
+      "Бэд-Трип": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3900, weekend: 4400, extra: 600},
+      "Астрал": {minPlayers: 2, maxBasePlayers: 4, weekdays: 3800, weekend: 4300, extra: 600},
+      "Без Лица": {minPlayers: 2, maxBasePlayers: 4, weekdays: 2500, weekend: 2900, extra: 600}
+    },
+    "детские": {
+      "Детский сад Радуга": {minPlayers: 2, maxBasePlayers: 5, weekdays: 2900, weekend: 3500, extra: 500},
+      "Призрачный дом": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3900, weekend: 4500, extra: 500},
+      "Дом Монстров": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3500, weekend: 3900, extra: 500},
+      "Очень странная квартира": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3900, weekend: 4400, extra: 500},
+      "Логово Ведьмы": {minPlayers: 2, maxBasePlayers: 5, weekdays: 4000, weekend: 4500, extra: 500},
+      "Затерянный город": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3500, weekend: 3900, extra: 500},
+      "Охотники за приведениями": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3800, weekend: 4300, extra: 500},
+      "Кошмар в стране чудес": {minPlayers: 2, maxBasePlayers: 5, weekdays: 3500, weekend: 3900, extra: 500}
+    }
+  };
+
+  // Цены доп. услуг
+  var servicesPrices = {
+    "Большая комната чаепития на 1 час после квеста": 950,
+    "Большая комната чаепития во время квеста": 475,
+    "Маленькая комната чаепития на 1 час после квеста": 800,
+    "Маленькая комната чаепития во время квеста": 400,
+    "Вечерняя игра": 500,
+    "Вечерняя игра (ОЗ,ОЗ2)": 1000,
+    "Ночная игра": 1000,
+    "Аниматор": 1150,
+    "Срочная игра": 500,
+    "Видео прохождения до квеста": 900,
+    "Поздравление именинника": 1150,
+    "Дополнительный актер": 800
+  };
+
+  // ЭЛЕМЕНТЫ
+  var questTypeSelect = document.getElementById('questType');
+  var questNameSelect = document.getElementById('questName');
+  var dayTypeSelect = document.getElementById('dayType');
+  var playerCountInput = document.getElementById('playerCount');
+  var photoMagnetInput = document.getElementById('photoMagnetCount');
+  var servicesCheckboxes = document.querySelectorAll('.services input[type=checkbox]');
+  var resultDiv = document.getElementById('result');
+
+  // Заполнение списка названий квестов
+  function fillQuestNames() {
+    var type = questTypeSelect.value;
+    var typeQuests = quests[type];
+
+    questNameSelect.innerHTML = "";
+
+    if (!typeQuests) {
+      var optEmpty = document.createElement("option");
+      optEmpty.value = "";
+      optEmpty.text = "Нет квестов";
+      questNameSelect.appendChild(optEmpty);
+      resultDiv.textContent = "Выберите корректный тип квеста.";
+      return;
+    }
+
+    for (var name in typeQuests) {
+      if (typeQuests.hasOwnProperty(name)) {
+        var option = document.createElement("option");
+        option.value = name;
+        option.text = name;
+        questNameSelect.appendChild(option);
+      }
+    }
+
+    updateCalculation();
+  }
+
+  // Пересчёт стоимости
+  function updateCalculation() {
+    var type = questTypeSelect.value;
+    var questName = questNameSelect.value;
+    var dayType = dayTypeSelect.value;
+    var playerCount = parseInt(playerCountInput.value, 10);
+    var photoMagnetCount = parseInt(photoMagnetInput.value, 10);
+
+    if (!quests[type] || !quests[type][questName]) {
+      resultDiv.textContent = "Выберите корректный квест.";
+      return;
+    }
+
+    if (isNaN(playerCount) || playerCount < 2) playerCount = 2;
+    if (playerCount > 30) {
+      resultDiv.textContent = "Максимальное количество игроков — 30.";
+      return;
+    }
+    playerCountInput.value = playerCount;
+
+    if (isNaN(photoMagnetCount) || photoMagnetCount < 0) photoMagnetCount = 0;
+    if (photoMagnetCount > 10) photoMagnetCount = 10;
+    photoMagnetInput.value = photoMagnetCount;
+
+    var quest = quests[type][questName];
+    var minPlayers = quest.minPlayers;
+    var maxBasePlayers = quest.maxBasePlayers;
+
+    var basePrice = (dayType === 'будни') ? quest.weekdays : quest.weekend;
+    var extraFee = quest.extra;
+
+    // Доплата за игроков начиная с (maxBasePlayers + 1)
+    var extraPlayersCount = Math.max(0, playerCount - maxBasePlayers);
+    var extraPlayersCost = extraPlayersCount * extraFee;
+    var totalPrice = basePrice + extraPlayersCost;
+
+    // Фотомагниты с чередующейся ценой 350/250
+    var photoMagnetCost = 0;
+    var i;
+    for (i = 0; i < photoMagnetCount; i++) {
+      photoMagnetCost += (i % 2 === 0) ? 350 : 250;
+    }
+
+    // Дополнительные услуги
+    var otherServicesCost = 0;
+    var selectedServices = [];
+    for (i = 0; i < servicesCheckboxes.length; i++) {
+      if (servicesCheckboxes[i].checked) {
+        selectedServices.push(servicesCheckboxes[i].value);
+      }
+    }
+
+    // Проверка, есть ли видео
+    var videoIncluded = false;
+    for (i = 0; i < selectedServices.length; i++) {
+      if (selectedServices[i] === "Видео прохождения до квеста") {
+        videoIncluded = true;
+        break;
+      }
+    }
+
+    for (i = 0; i < selectedServices.length; i++) {
+      var service = selectedServices[i];
+      if (service !== "Видео прохождения до квеста") {
+        otherServicesCost += servicesPrices[service] || 0;
+      }
+    }
+    if (videoIncluded) {
+      otherServicesCost += servicesPrices["Видео прохождения до квеста"];
+    }
+
+    totalPrice += photoMagnetCost + otherServicesCost;
+
+    // Формирование текста разбора
+    var breakdownText = "";
+    breakdownText += "Базовая цена: " + basePrice + " руб. (за " + minPlayers + "–" + maxBasePlayers + " игроков)\n";
+    if (extraPlayersCount > 0) {
+      breakdownText += "Доплата за " + extraPlayersCount + " дополнительных игроков: " +
+                       extraFee + " * " + extraPlayersCount + " = " +
+                       extraPlayersCost + " руб.\n";
+    }
+
+    var servicesListDesc = [];
+
+    if (photoMagnetCount > 0) {
+      var photoMagnetDesc = "Фотомагнит: ";
+      for (i = 0; i < photoMagnetCount; i++) {
+        photoMagnetDesc += (i % 2 === 0) ? "350" : "250";
+        if (i !== photoMagnetCount - 1) {
+          photoMagnetDesc += " руб. + ";
+        } else {
+          photoMagnetDesc += " руб.";
+        }
+      }
+      servicesListDesc.push(photoMagnetDesc);
+    }
+
+    if (videoIncluded) {
+      servicesListDesc.push("Видео прохождения: 900 рублей");
+    }
+
+    for (i = 0; i < selectedServices.length; i++) {
+      var s = selectedServices[i];
+      if (s !== "Видео прохождения до квеста") {
+        servicesListDesc.push(s.toLowerCase() + " " + (servicesPrices[s] || 0) + " рублей");
+      }
+    }
+
+    if (servicesListDesc.length > 0) {
+      breakdownText += "Дополнительные услуги: " + servicesListDesc.join(" + ") + "\n";
+    }
+
+    breakdownText += "Итоговая стоимость: " + totalPrice + " руб.";
+
+    resultDiv.textContent = breakdownText;
+  }
+
+  // Подписки на события
+  questTypeSelect.addEventListener('change', fillQuestNames);
+  questNameSelect.addEventListener('change', updateCalculation);
+  dayTypeSelect.addEventListener('change', updateCalculation);
+  playerCountInput.addEventListener('input', updateCalculation);
+  photoMagnetInput.addEventListener('input', updateCalculation);
+  for (var i = 0; i < servicesCheckboxes.length; i++) {
+    servicesCheckboxes[i].addEventListener('change', updateCalculation);
+  }
+
+  // Стартовое заполнение
+  fillQuestNames();
+});
+</script>
+
+</body>
+</html>
