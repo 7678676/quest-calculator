@@ -3,23 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ZDESQUEST — калькулятор стоимости квестов</title>
+<title>ZDES QUEST — калькулятор стоимости квестов</title>
 
 <!-- Шрифт Montserrat -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
   :root {
-    /* БРЕНДОВЫЕ ЦВЕТА ZDES QUEST */
     --brand-primary: #e6d05a;   /* жёлтый из логотипа */
     --brand-dark: #000000;      /* чёрный */
     --brand-light: #ffffff;     /* белый */
     --brand-bg: #050505;        /* фон вокруг карточки */
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
@@ -51,9 +48,7 @@
   }
 
   @media (min-width: 600px) {
-    .card {
-      padding: 28px 28px 24px;
-    }
+    .card { padding: 28px 28px 24px; }
   }
 
   .brand-header {
@@ -159,9 +154,7 @@
     margin: 0;
   }
 
-  .block {
-    margin-top: 10px;
-  }
+  .block { margin-top: 10px; }
 
   .services {
     margin-top: 10px;
@@ -173,9 +166,7 @@
     border: 1px solid #e2e8f0;
   }
 
-  .services-inner {
-    padding: 10px 10px 8px;
-  }
+  .services-inner { padding: 10px 10px 8px; }
 
   .service-item {
     display: flex;
@@ -196,9 +187,7 @@
     gap: 8px;
   }
 
-  .inline-number input[type=number] {
-    width: 80px;
-  }
+  .inline-number input[type=number] { width: 80px; }
 
   .section-title {
     margin-top: 14px;
@@ -206,6 +195,19 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--brand-dark);
+  }
+
+  .discount-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #1f2933;
+  }
+
+  .discount-row input[type=checkbox] {
+    accent-color: var(--brand-primary);
   }
 
   #result {
@@ -220,9 +222,7 @@
     border: 1px solid #1e293b;
   }
 
-  #result strong {
-    color: var(--brand-primary);
-  }
+  #result strong { color: var(--brand-primary); }
 
   .hint {
     margin-top: 6px;
@@ -236,7 +236,7 @@
   <div class="card">
     <!-- ШАПКА ZDES QUEST -->
     <div class="brand-header">
-      <!-- ЗДЕСЬ ЛОГО: просто загрузи файл logo-zdes-quest.png в репозиторий -->
+      <!-- логотип: файл logo-zdes-quest.png в корне репозитория -->
       <div class="brand-logo">
         <img src="logo-zdes-quest.png" alt="ZDES QUEST" class="brand-logo-img">
       </div>
@@ -277,6 +277,14 @@
         <label for="playerCount">Количество игроков</label>
         <input type="number" id="playerCount" value="2" min="2" max="30" />
       </div>
+    </div>
+
+    <!-- СКИДКА 10% -->
+    <div class="discount-row">
+      <input type="checkbox" id="discount10">
+      <label for="discount10" style="margin:0;text-transform:none;letter-spacing:0;font-weight:500;color:#111827;">
+        Применить скидку 10% на игру (без доп.услуг)
+      </label>
     </div>
 
     <!-- ФОТОМАГНИТЫ -->
@@ -405,6 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var playerCountInput = document.getElementById('playerCount');
   var photoMagnetInput = document.getElementById('photoMagnetCount');
   var servicesCheckboxes = document.querySelectorAll('.services input[type=checkbox]');
+  var discountCheckbox = document.getElementById('discount10');
   var resultDiv = document.getElementById('result');
 
   function fillQuestNames() {
@@ -440,6 +449,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var dayType = dayTypeSelect.value;
     var playerCount = parseInt(playerCountInput.value, 10);
     var photoMagnetCount = parseInt(photoMagnetInput.value, 10);
+    var discountApplied = discountCheckbox.checked;
 
     if (!quests[type] || !quests[type][questName]) {
       resultDiv.textContent = "Выберите корректный квест.";
@@ -466,14 +476,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var extraPlayersCount = Math.max(0, playerCount - maxBasePlayers);
     var extraPlayersCost = extraPlayersCount * extraFee;
-    var totalPrice = basePrice + extraPlayersCost;
 
+    // Стоимость только игры (без допов)
+    var gamePrice = basePrice + extraPlayersCost;
+    var discountAmount = 0;
+    var discountedGamePrice = gamePrice;
+
+    if (discountApplied) {
+      discountAmount = Math.round(gamePrice * 0.10);
+      discountedGamePrice = gamePrice - discountAmount;
+    }
+
+    // Фотомагниты (чередование 350/250)
     var photoMagnetCost = 0;
     var i;
     for (i = 0; i < photoMagnetCount; i++) {
       photoMagnetCost += (i % 2 === 0) ? 350 : 250;
     }
 
+    // Доп. услуги
     var otherServicesCost = 0;
     var selectedServices = [];
     for (i = 0; i < servicesCheckboxes.length; i++) {
@@ -500,14 +521,25 @@ document.addEventListener("DOMContentLoaded", function () {
       otherServicesCost += servicesPrices["Видео прохождения до квеста"];
     }
 
-    totalPrice += photoMagnetCost + otherServicesCost;
+    // Итог = игра (со скидкой, если есть) + магниты + доп.услуги
+    var totalPrice = discountedGamePrice + photoMagnetCost + otherServicesCost;
 
+    // Текст разбора
     var breakdownText = "";
-    breakdownText += "Базовая цена: " + basePrice + " руб. (за " + minPlayers + "–" + maxBasePlayers + " игроков)\n";
+    breakdownText += "Базовая цена: " + basePrice + " руб. (за " +
+                     minPlayers + "–" + maxBasePlayers + " игроков)\n";
     if (extraPlayersCount > 0) {
-      breakdownText += "Доплата за " + extraPlayersCount + " дополнительных игроков: " +
-                       extraFee + " * " + extraPlayersCount + " = " +
-                       extraPlayersCost + " руб.\n";
+      breakdownText += "Доплата за " + extraPlayersCount +
+                       " дополнительных игроков: " + extraFee + " * " +
+                       extraPlayersCount + " = " + extraPlayersCost + " руб.\n";
+    }
+
+    if (discountApplied) {
+      breakdownText += "Цена игры до скидки: " + gamePrice + " руб.\n";
+      breakdownText += "Скидка 10% на игру: -" + discountAmount + " руб.\n";
+      breakdownText += "Итого за игру: " + discountedGamePrice + " руб.\n";
+    } else {
+      breakdownText += "Итого за игру: " + gamePrice + " руб.\n";
     }
 
     var servicesListDesc = [];
@@ -532,12 +564,14 @@ document.addEventListener("DOMContentLoaded", function () {
     for (i = 0; i < selectedServices.length; i++) {
       var s = selectedServices[i];
       if (s !== "Видео прохождения до квеста") {
-        servicesListDesc.push(s.toLowerCase() + " " + (servicesPrices[s] || 0) + " рублей");
+        servicesListDesc.push(s.toLowerCase() + " " +
+                              (servicesPrices[s] || 0) + " рублей");
       }
     }
 
     if (servicesListDesc.length > 0) {
-      breakdownText += "Дополнительные услуги: " + servicesListDesc.join(" + ") + "\n";
+      breakdownText += "Дополнительные услуги: " +
+                       servicesListDesc.join(" + ") + "\n";
     }
 
     breakdownText += "Итоговая стоимость: " + totalPrice + " руб.";
@@ -550,6 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
   dayTypeSelect.addEventListener('change', updateCalculation);
   playerCountInput.addEventListener('input', updateCalculation);
   photoMagnetInput.addEventListener('input', updateCalculation);
+  discountCheckbox.addEventListener('change', updateCalculation);
   for (var i = 0; i < servicesCheckboxes.length; i++) {
     servicesCheckboxes[i].addEventListener('change', updateCalculation);
   }
