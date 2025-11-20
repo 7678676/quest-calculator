@@ -220,6 +220,7 @@
     font-size: 14px;
     line-height: 1.5;
     border: 1px solid #1e293b;
+    min-height: 40px;
   }
 
   #result strong { color: var(--brand-primary); }
@@ -228,6 +229,31 @@
     margin-top: 6px;
     font-size: 12px;
     color: #94a3b8;
+  }
+
+  .copy-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--brand-primary);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    width: 100%;
+  }
+
+  .copy-btn:hover {
+    background: #f1dc70;
+  }
+
+  .copy-status {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #22c55e;
+    height: 14px;
   }
 </style>
 </head>
@@ -356,6 +382,8 @@
     </div>
 
     <div id="result"></div>
+    <button id="copyBtn" class="copy-btn">📋 Скопировать результат</button>
+    <div id="copyStatus" class="copy-status"></div>
   </div>
 </div>
 
@@ -415,6 +443,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var servicesCheckboxes = document.querySelectorAll('.services input[type=checkbox]');
   var discountCheckbox = document.getElementById('discount10');
   var resultDiv = document.getElementById('result');
+  var copyBtn = document.getElementById('copyBtn');
+  var copyStatus = document.getElementById('copyStatus');
 
   function fillQuestNames() {
     var type = questTypeSelect.value;
@@ -477,7 +507,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var extraPlayersCount = Math.max(0, playerCount - maxBasePlayers);
     var extraPlayersCost = extraPlayersCount * extraFee;
 
-    // Стоимость только игры (без допов)
+    // стоимость только игры (без допов)
     var gamePrice = basePrice + extraPlayersCost;
     var discountAmount = 0;
     var discountedGamePrice = gamePrice;
@@ -487,14 +517,14 @@ document.addEventListener("DOMContentLoaded", function () {
       discountedGamePrice = gamePrice - discountAmount;
     }
 
-    // Фотомагниты (чередование 350/250)
+    // Фотомагниты
     var photoMagnetCost = 0;
     var i;
     for (i = 0; i < photoMagnetCount; i++) {
       photoMagnetCost += (i % 2 === 0) ? 350 : 250;
     }
 
-    // Доп. услуги
+    // Доп.услуги
     var otherServicesCost = 0;
     var selectedServices = [];
     for (i = 0; i < servicesCheckboxes.length; i++) {
@@ -521,7 +551,7 @@ document.addEventListener("DOMContentLoaded", function () {
       otherServicesCost += servicesPrices["Видео прохождения до квеста"];
     }
 
-    // Итог = игра (со скидкой, если есть) + магниты + доп.услуги
+    // Итог: игра (со скидкой, если есть) + магниты + допы
     var totalPrice = discountedGamePrice + photoMagnetCost + otherServicesCost;
 
     // Текст разбора
@@ -588,6 +618,20 @@ document.addEventListener("DOMContentLoaded", function () {
   for (var i = 0; i < servicesCheckboxes.length; i++) {
     servicesCheckboxes[i].addEventListener('change', updateCalculation);
   }
+
+  // Кнопка "Скопировать результат"
+  copyBtn.addEventListener("click", function () {
+    var text = resultDiv.textContent || "";
+    if (!text.trim()) return;
+
+    navigator.clipboard.writeText(text).then(function () {
+      copyStatus.textContent = "Скопировано!";
+      setTimeout(function () { copyStatus.textContent = ""; }, 1500);
+    }).catch(function () {
+      copyStatus.textContent = "Не удалось скопировать";
+      setTimeout(function () { copyStatus.textContent = ""; }, 1500);
+    });
+  });
 
   fillQuestNames();
 });
